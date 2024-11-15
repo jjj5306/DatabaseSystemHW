@@ -1,32 +1,68 @@
 package test;
 
-import java.sql.*;
-import java.util.Properties;
+import test.service.Insert;
+import test.utils.DatabaseConnection;
+
+import java.sql.Connection;
+import java.util.Scanner;
 
 public class Main {
     public static void main(String args[]) {
-        try {
-            Properties props = new Properties();
-            props.load(Main.class.getClassLoader().getResourceAsStream("application.properties"));
+        try (Connection conn = DatabaseConnection.getConnection();
+             Scanner scanner = new Scanner(System.in)) {
 
-            String url = props.getProperty("url");
-            String username = props.getProperty("username");
-            String password = props.getProperty("password");
+            while (true) {
+                System.out.print("원하는 작업을 선택하세요: \n");
+                System.out.println("1. 삽입");
+                System.out.println("2. 삭제");
+                System.out.println("3. 검색");
+                System.out.println("4. 종료");
 
-            Class.forName("com.mysql.cj.jdbc.Driver");
-            Connection con = DriverManager.getConnection(url, username, password);
+                String choice = scanner.nextLine();
 
-            Statement stmt = con.createStatement();
+                switch (choice) {
+                    case "1":
+                        while (true) {
+                            System.out.print("원하는 작업을 선택하세요: \n");
+                            System.out.println("1. Book");
+                            System.out.println("2. Customer");
+                            System.out.println("3. Order");
+                            System.out.println("4. 이전 메뉴로");
 
-            //
-            ResultSet rs = stmt.executeQuery("SELECT * FROM Book");
+                            String insertChoice = scanner.nextLine();
 
-            while(rs.next())
-                System.out.println(rs.getInt(1) + " " + rs.getString(2) + " " + rs.getString(3));
+                            switch (insertChoice) {
+                                case "1":
+                                    Insert.insertBook(conn, scanner);
+                                    break;
+                                case "2":
+                                    Insert.insertCustomer(conn, scanner);
+                                    break;
+                                case "3":
+                                    Insert.insertOrder(conn, scanner);
+                                    break;
+                                case "4":
+                                    System.out.println("이전 메뉴로 돌아갑니다.");
+                                    break;
+                                default:
+                                    System.out.println("잘못된 선택입니다. 다시 선택해주세요.");
+                                    continue;
+                            }
+                            if (insertChoice.equals("4")) break;
+                        }
+                        break;
 
-            con.close();
-        } catch(Exception e) {
-            e.printStackTrace();
+
+
+                    case "4":
+                        System.out.println("프로그램을 종료합니다.");
+                        return;
+                    default:
+                        System.out.println("잘못된 선택입니다. 다시 선택해주세요.");
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("데이터베이스 연결 오류: " + e.getMessage());
         }
     }
 }
